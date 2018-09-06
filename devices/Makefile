@@ -1,5 +1,5 @@
 #!/usr/bin/make
-CROSS_COMPILE ?= arm-none-linux-gnueabi-
+CROSS_COMPILE ?= arm-linux-androideabi-
 
 CC := $(CROSS_COMPILE)gcc
 MAKE ?= make
@@ -10,7 +10,7 @@ STRIP := $(CROSS_COMPILE)strip
 
 SHARED_OBJS := nvaes.o nvrcm.o
 
-DEVICE_SOURCES = $(shell find -type f -name '*.bin')
+DEVICE_SOURCES = $(shell gfind -type f -name '*.bin')
 DEVICE_TARGETS = $(patsubst %.bin, %.h, $(DEVICE_SOURCES))
 
 all: $(DEVICE_TARGETS)

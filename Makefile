@@ -1,5 +1,5 @@
 #!/usr/bin/make
-CROSS_COMPILE ?= arm-none-linux-gnueabi-
+CROSS_COMPILE ?= arm-linux-androideabi-
 
 CC := $(CROSS_COMPILE)gcc
 MAKE ?= make
@@ -12,7 +12,7 @@ SHARED_OBJS := nvaes.o nvrcm.o
 
 #NVBLOB2GO_OBJS = gpiokeys.o scrollback.o
 
-DEVICE_DIRS = $(shell find devices/ -mindepth 1 -maxdepth 1 -type d)
+DEVICE_DIRS = $(shell gfind devices/ -mindepth 1 -maxdepth 1 -type d)
 DEVICE_TARGETS = $(patsubst devices/%,%, $(DEVICE_DIRS))
 DEVICE_RAMDISKS = $(patsubst %, %.cpio.gz, $(DEVICE_TARGETS))
 DEVICE_BOOTIMGS = $(patsubst %, %.img, $(DEVICE_TARGETS))
