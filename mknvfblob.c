@@ -8,8 +8,8 @@
 #include "mknvfblob.h"
 #include "nvrcm.h"
 
-#include "miniloaders/miniloader_t2.h"
-#include "miniloaders/miniloader_t3.h"
+#include "miniloaders/tegra20-miniloader.h"
+#include "miniloaders/tegra30-miniloader.h"
 
 #define BLOB_VERSION "v1.5.00000"
 
@@ -52,12 +52,12 @@ static struct chip_data {
     uint32_t odmdata;
 } chip_types[] = {
     { "ventana", CHIP_TYPE_TEGRA2,
-      miniloader_t2, sizeof(miniloader_t2),
-      TEGRA2_BL_ENTRYPOINT, TEGRA2_ODMDATA
+      miniloader_tegra20, sizeof(miniloader_tegra20),
+      TEGRA20_MINILOADER_ENTRY, TEGRA2_ODMDATA
     },
     { "cardhu",  CHIP_TYPE_TEGRA3,
-      miniloader_t3, sizeof(miniloader_t3),
-      TEGRA3_BL_ENTRYPOINT, TEGRA3_ODMDATA
+      miniloader_tegra30, sizeof(miniloader_tegra30),
+      TEGRA30_MINILOADER_ENTRY, TEGRA3_ODMDATA
     }
 };
 

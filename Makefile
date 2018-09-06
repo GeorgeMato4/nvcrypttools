@@ -4,7 +4,7 @@ CROSS_COMPILE ?= arm-linux-androideabi-
 CC := $(CROSS_COMPILE)gcc
 MAKE ?= make
 
-CFLAGS := -O2 -Wall -Wno-unused-variable -static -march=armv7-a -mthumb -I.
+CFLAGS := -O0 -g -D__ANDROID_API__=17 -DNVAES_DEBUG_RAW_CRYPT -DNVAES_DEBUG_DATA -DENABLE_DEBUG -Wall -Wno-unused-variable -static -march=armv7-a -mthumb -I.
 LDFLAGS := 
 STRIP := $(CROSS_COMPILE)strip
 
@@ -17,7 +17,7 @@ DEVICE_TARGETS = $(patsubst devices/%,%, $(DEVICE_DIRS))
 DEVICE_RAMDISKS = $(patsubst %, %.cpio.gz, $(DEVICE_TARGETS))
 DEVICE_BOOTIMGS = $(patsubst %, %.img, $(DEVICE_TARGETS))
 
-all: nvsign nvencrypt nvdecrypt $(DEVICE_TARGETS)
+all: nvsign nvencrypt nvdecrypt mknvfblob $(DEVICE_TARGETS)
 
 $(DEVICE_TARGETS): nvblob2go.c $(SHARED_OBJS) bins
 	$(CC) $(CFLAGS) -Idevices/$@ -o $@ nvblob2go.c $(SHARED_OBJS) $(LDFLAGS) && \
