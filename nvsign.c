@@ -28,7 +28,7 @@ int main(int argc, char **argv)
         exit(3);
     }
 
-    if(nvaes_use_ssk(ctx, 1) == 0) {
+    if(nvaes_use_sbk(ctx, 1) == 0) {
         fprintf(stderr, "Error requesting the use of the SSK.\n");
         exit(3);
     }

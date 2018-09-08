@@ -11,6 +11,7 @@
 
 #define TEGRA_CRYPTO_IOCTL_NEED_SSK	_IOWR(0x98, 100, int)
 #define TEGRA_CRYPTO_IOCTL_PROCESS_REQ	_IOWR(0x98, 101, int*)
+#define TEGRA_CRYPTO_IOCTL_NEED_SBK	_IOWR(0x98, 104, int)
 
 #define TEGRA_CRYPTO_CBC	(1UL << 1)
 
@@ -36,6 +37,7 @@ int nvaes_decrypt(nvaes_ctx, unsigned char *, int, unsigned char *, int, unsigne
 int nvaes_sign(nvaes_ctx, unsigned char *, int, unsigned char *);
 
 int nvaes_use_ssk(nvaes_ctx, int);
+int nvaes_use_sbk(nvaes_ctx, int);
 void nvaes_set_key(nvaes_ctx, char[AES_BLOCK_SIZE]);
 
 int nvaes_encrypt_fd(nvaes_ctx, int, int);

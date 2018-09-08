@@ -4,7 +4,7 @@ CROSS_COMPILE ?= arm-linux-androideabi-
 CC := $(CROSS_COMPILE)gcc
 MAKE ?= make
 
-CFLAGS := -O0 -g -D__ANDROID_API__=17 -DNVAES_DEBUG_RAW_CRYPT -DNVAES_DEBUG_DATA -DENABLE_DEBUG -Wall -Wno-unused-variable -static -march=armv7-a -mthumb -I.
+CFLAGS := -O0 -g -D__ANDROID_API__=17 -DNVAES_DEBUG_ENABLE -DNVAES_DEBUG_RAW_CRYPT -DNVAES_DEBUG_DATA -DENABLE_DEBUG -Wall -Wno-unused-variable -static -march=armv7-a -mthumb -I.
 LDFLAGS := 
 STRIP := $(CROSS_COMPILE)strip
 

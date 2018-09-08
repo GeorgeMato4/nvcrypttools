@@ -20,6 +20,7 @@ typedef struct {
     unsigned char key[AES_KEYSIZE_128];
     unsigned char iv[AES_BLOCK_SIZE];
     int use_ssk;
+    int use_sbk;
 } nvaes_ctx_priv;
 
 static void debug(const char *fmt, ...)
@@ -141,6 +142,7 @@ static int raw_crypt(nvaes_ctx ctx, unsigned char mode, unsigned char *src, int 
 
     do {
         ret = ioctl(priv->handle, TEGRA_CRYPTO_IOCTL_PROCESS_REQ, &req);
+        usleep(1000);
 
         if(ret != 0) {
             perror("error requesting crypt");
@@ -165,13 +167,27 @@ int nvaes_use_ssk(nvaes_ctx ctx, int use_ssk)
     nvaes_ctx_priv *priv = (nvaes_ctx_priv *)ctx;
 
     if(ioctl(priv->handle, TEGRA_CRYPTO_IOCTL_NEED_SSK, use_ssk) < 0) {
-        perror("error requesting SSK usage");
+        perror("error setting SSK usage");
         priv->use_ssk = 0;
-        return 0;
+        return -1;
     }
 
-    priv->use_ssk = 1;
-    return 1;
+    priv->use_ssk = use_ssk;
+    return 0;
+}
+
+int nvaes_use_sbk(nvaes_ctx ctx, int use_sbk)
+{
+    nvaes_ctx_priv *priv = (nvaes_ctx_priv *)ctx;
+
+    if(ioctl(priv->handle, TEGRA_CRYPTO_IOCTL_NEED_SBK, use_sbk) < 0) {
+        perror("error setting SBK usage");
+        priv->use_sbk = 0;
+        return -1;
+    }
+
+    priv->use_sbk = use_sbk;
+    return 0;
 }
 
 void nvaes_set_key(nvaes_ctx ctx, char key[AES_BLOCK_SIZE])

@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     nvaes_ctx ctx;
 
     if(argc < 3) {
-        printf("Usage: %s <file to decrypt> <decrypted file>\n", argv[0]);
+        printf("Usage: %s <file to decrypt> <decrypted file> <sbk|ssk> (optional)\n", argv[0]);
         exit(3);
     }
 
@@ -35,9 +35,22 @@ int main(int argc, char **argv)
         exit(3);
     }
 
-    if(nvaes_use_ssk(ctx, 1) == 0) {
-        fprintf(stderr, "Error requesting the use of the SSK.\n");
-        exit(3);
+    int use_ssk = argc > 3 && !strcmp(argv[3], "ssk");
+    if (use_ssk) {
+        printf("using ssk\n");
+        if(nvaes_use_ssk(ctx, 1)) {
+            fprintf(stderr, "Error setting the use of the SSK.\n");
+            exit(3);
+        }
+    }
+
+    int use_sbk = argc > 3 && !strcmp(argv[3], "sbk");
+    if (use_sbk) {
+        printf("using sbk\n");
+        if(nvaes_use_sbk(ctx, 1)) {
+            fprintf(stderr, "Error setting the use of the SBK.\n");
+            exit(3);
+        }
     }
 
     if(nvaes_decrypt_fd(ctx, fi, fo) == 0) {

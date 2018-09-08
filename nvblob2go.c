@@ -416,7 +416,7 @@ int nvblob_generate()
         goto fail;
     }
 
-    if(nvaes_use_ssk(ctx, 1) == 0) {
+    if(nvaes_use_sbk(ctx, 1) == 0) {
         append_log("Error requesting the use of the SSK.");
         ret = 4;
         goto fail;
