@@ -4,6 +4,8 @@
 # Base Address: 0000h Range: 40020000h - 40021FC0h Loaded length: 1FC0h
 # ===========================================================================
 
+#define PMC_SCRATCH_0 0x7000E450
+
 # Segment type: Regular
                 # AREA RAM, DATA, ALIGN=0
                 # ORG 0x40020000
@@ -12,6 +14,10 @@
                 .globl Start
 Start:                                   # DATA XREF: RAM:4002009C↓o
                                         # RAM:400200A0↓o ...
+                LDR     R0, =PMC_SCRATCH_0
+                LDR     R1, [R0]
+                ORR     R1, #0x20000000
+                STR     R1, [R0]
                 LDR     R0, =0x6001A000
                 LDR     R1, =0x1110
                 ADD     R1, R0, R1
@@ -237,7 +243,8 @@ obfuscate:                              # CODE XREF: AvpResume↑p
                 ADR     R11, AvpResume
 
 BlastIt:                                # CODE XREF: obfuscate+20↓j
-                STMIA   R10!, {R0-R3}
+                # STMIA   R10!, {R0-R3}
+                ADD     R10, #16        // just loop, don't really clear
                 CMP     R10, R11
                 BLT     BlastIt
                 BX      LR
@@ -259,4 +266,5 @@ DoResetSpin:                         # CODE XREF: DoReset:loc_40020364↓j
 # End of function DoReset
 
                 .p2align 4
-
+                .globl End
+End:

@@ -59,7 +59,7 @@ warmboot-h4x: warmboot-h4x.c $(SHARED_OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-warmboot-tf101.o: warmboot-tf101.s
+warmboot-tf101.o: warmboot-tf101.S
 	$(CC) -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
 
 warmboot-tf101.elf: warmboot-tf101.o warmboot-tf101.lds
