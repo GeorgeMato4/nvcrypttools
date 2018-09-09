@@ -56,6 +56,7 @@ void memcpy_to_file(const char *fname, uint8_t *ptr, size_t size)
     fp = fopen(fname, "wb");
     fwrite(ptr, size, 1, fp);
     fclose(fp);
+    sync();
 }
 
 void nvaes_set_dbg(int dbg_on) {

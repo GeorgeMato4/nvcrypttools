@@ -1,14 +1,18 @@
 #include <assert.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 #include "nvaes.h"
 
 #define WARMBOOT_ADDR 0x40020000
+#define LP0_VEC_STR "lp0_vec="
 
 typedef struct warmboot_hdr {
     uint32_t len_insecure;
@@ -35,6 +39,7 @@ static struct {
     uint32_t entry_point;
     int decrypt;
     int encrypt;
+    int inject;
 } flags = {{0}};
 
 static void parse_options(int argc, char **argv)
@@ -50,6 +55,7 @@ static void parse_options(int argc, char **argv)
         { "entry-point", required_argument, 0, 'E' },
         { "encrypt", required_argument, 0, 'e' },
         { "decrypt", required_argument, 0, 'd' },
+        { "inject", required_argument, 0, 'I' },
         { 0, 0, 0, 0}
     };
 
@@ -59,7 +65,7 @@ static void parse_options(int argc, char **argv)
     flags.entry_point = WARMBOOT_ADDR;
 
     while(
-        (c=getopt_long(argc,argv,"i:o:bsK:deDB:E:",longopts,&index)) != -1
+        (c=getopt_long(argc,argv,"i:o:bsK:deDB:E:I",longopts,&index)) != -1
     ) switch(c) {
         case 'i':
             strncpy(flags.in_path, optarg, sizeof(flags.in_path));
@@ -72,6 +78,9 @@ static void parse_options(int argc, char **argv)
         break;
         case 'E':
             flags.entry_point = strtoul(optarg, NULL, 0);
+        break;
+        case 'I':
+            flags.inject = 1;
         break;
         case 'b':
             flags.use_sbk = 1;
@@ -240,6 +249,45 @@ int main(int argc, char **argv) {
         memcpy(out + offsetof(warmboot_hdr_t, hash), calc_hash, sizeof(calc_hash));
         print_hdr(hdr);
         memcpy_to_file(flags.out_path, out, hdr->len_insecure);
+
+        if (flags.inject) {
+            int fcmd;
+            if((fcmd = open("/proc/cmdline", O_RDONLY)) < 0) {
+                fprintf(stderr, "Error opening input file: %s\n", flags.in_path);
+                perror("Error");
+                exit(3);
+            }
+            int cmd_bytes;
+            char cmd_buf[1024*8];
+            cmd_bytes = read(fcmd, cmd_buf, sizeof(cmd_buf));
+            assert(cmd_bytes > 0);
+            char *lp0_arg = strstr(cmd_buf, LP0_VEC_STR);
+            assert(lp0_arg);
+            char *lp0_sz_str = lp0_arg + strlen(LP0_VEC_STR);
+            uint32_t lp0_sz = strtoul(lp0_sz_str, NULL, 10);
+            char *at_ptr = strstr(lp0_sz_str, "@");
+            assert(at_ptr);
+            char *lp0_addr_str = at_ptr + 1;
+            uint32_t lp0_addr = strtoul(lp0_addr_str, NULL, 16);
+            printf("lp0 addr: 0x%08x size: 0x%08x\n", lp0_addr, lp0_sz);
+
+            long page_size = sysconf(_SC_PAGE_SIZE);
+            assert(lp0_addr % page_size == 0);
+            assert(lp0_sz % page_size == 0);
+            assert(hdr->len_insecure <= lp0_sz);
+
+            int devmem = open("/dev/mem", O_RDWR);
+            uint8_t *mapping = mmap(NULL, lp0_sz, PROT_READ | PROT_WRITE,
+                MAP_SHARED, devmem, lp0_addr);
+            if (mapping == MAP_FAILED) {
+                perror("Could not map memory");
+                exit(3);
+            }
+            memcpy(mapping, out, hdr->len_insecure);
+            __builtin___clear_cache(mapping, mapping + lp0_sz);
+            close(devmem);
+            sync();
+        }
     }
     
     nvaes_close(ctx);
