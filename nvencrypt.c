@@ -13,6 +13,7 @@ static struct {
     int use_ssk;
     char key[AES_BLOCK_SIZE];
     int key_set;
+    int debug;
 } flags = {{0}};
 
 static void parse_options(int argc, char * const *argv)
@@ -23,13 +24,14 @@ static void parse_options(int argc, char * const *argv)
         { "key", required_argument, 0, 'K' },
         { "sbk", required_argument, 0, 'b' },
         { "ssk", required_argument, 0, 's' },
+        { "debug", required_argument, 0, 'd' },
         { 0, 0, 0, 0}
     };
 
     int index, c = 0, i;
 
     while(
-        (c=getopt_long(argc,argv,"i:o:bsK:",longopts,&index)) != -1
+        (c=getopt_long(argc,argv,"i:o:bsK:d",longopts,&index)) != -1
     ) switch(c) {
         case 'i':
             strncpy(flags.in_path, optarg, sizeof(flags.in_path));
@@ -54,6 +56,9 @@ static void parse_options(int argc, char * const *argv)
                 exit(3);
             }
         break;
+        case 'd':
+            flags.debug = 1;
+        break;
     }
 }
 
@@ -66,6 +71,8 @@ int main(int argc, char **argv)
     nvaes_ctx ctx;
 
     parse_options(argc, argv);
+
+    nvaes_set_dbg(flags.debug);
 
     if((fi = open(flags.in_path, O_RDONLY)) <= 0) {
         fprintf(stderr, "Error opening input file: %s\n", flags.in_path);
@@ -97,6 +104,12 @@ int main(int argc, char **argv)
             exit(3);
         }
     } else if (flags.key_set) {
+        char *k = flags.key;
+        printf("Using key: "
+            "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx"
+            "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx\n",
+            k[ 0], k[ 1], k[ 2], k[ 3], k[ 4], k[ 5], k[ 6], k[ 7],
+            k[ 8], k[ 9], k[10], k[11], k[12], k[13], k[14], k[15]);
         nvaes_set_key(ctx, flags.key);
     }
 

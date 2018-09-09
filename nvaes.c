@@ -205,7 +205,7 @@ void nvaes_set_key(nvaes_ctx ctx, char key[AES_BLOCK_SIZE])
 {
     nvaes_ctx_priv *priv = (nvaes_ctx_priv *)ctx;
     memset(priv->key, 0, sizeof(priv->key));
-    memcpy(priv->key, key, MIN(sizeof(priv->key), sizeof(key)));
+    memcpy(priv->key, key, MIN(sizeof(priv->key), AES_BLOCK_SIZE));
     priv->use_sbk = 0;
     priv->use_ssk = 0;
 }
