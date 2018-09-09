@@ -23,9 +23,18 @@ typedef struct {
     int use_sbk;
 } nvaes_ctx_priv;
 
+int nvaes_dbg;
+
+void nvaes_set_dbg(int dbg_on) {
+    nvaes_dbg = dbg_on;
+}
+
 static void debug(const char *fmt, ...)
 {
     #ifdef NVAES_DEBUG_ENABLE
+    if (!nvaes_dbg) {
+        return;
+    }
     static int prefix = 0;
     va_list args;
     if(prefix == 0) {
@@ -118,7 +127,7 @@ static int raw_crypt(nvaes_ctx ctx, unsigned char mode, unsigned char *src, int 
     req.ivlen = AES_BLOCK_SIZE;
     memcpy(req.iv, iv, AES_BLOCK_SIZE);
 
-    if(priv->use_ssk == 0) {
+    if(!priv->use_ssk && !priv->use_sbk) {
         memset(req.key, 0, sizeof(req.key));
         memcpy(req.key, priv->key, MIN(sizeof(req.key), sizeof(priv->key)));
     }
@@ -142,7 +151,7 @@ static int raw_crypt(nvaes_ctx ctx, unsigned char mode, unsigned char *src, int 
 
     do {
         ret = ioctl(priv->handle, TEGRA_CRYPTO_IOCTL_PROCESS_REQ, &req);
-        usleep(1000);
+        // usleep(1000);
 
         if(ret != 0) {
             perror("error requesting crypt");
@@ -173,6 +182,7 @@ int nvaes_use_ssk(nvaes_ctx ctx, int use_ssk)
     }
 
     priv->use_ssk = use_ssk;
+    priv->use_sbk = 0;
     return 0;
 }
 
@@ -187,6 +197,7 @@ int nvaes_use_sbk(nvaes_ctx ctx, int use_sbk)
     }
 
     priv->use_sbk = use_sbk;
+    priv->use_ssk = 0;
     return 0;
 }
 
@@ -195,6 +206,8 @@ void nvaes_set_key(nvaes_ctx ctx, char key[AES_BLOCK_SIZE])
     nvaes_ctx_priv *priv = (nvaes_ctx_priv *)ctx;
     memset(priv->key, 0, sizeof(priv->key));
     memcpy(priv->key, key, MIN(sizeof(priv->key), sizeof(key)));
+    priv->use_sbk = 0;
+    priv->use_ssk = 0;
 }
 
 nvaes_ctx nvaes_open()

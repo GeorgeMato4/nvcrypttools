@@ -44,6 +44,8 @@ int nvaes_encrypt_fd(nvaes_ctx, int, int);
 int nvaes_decrypt_fd(nvaes_ctx, int, int);
 int nvaes_sign_fd(nvaes_ctx, int, unsigned char *);
 
+void nvaes_set_dbg(int dbg_on);
+
 #define NVAES_TEGRA_DEVICE "/dev/tegra-crypto"
 #define NVAES_PAGE_SIZE 4096
 #define NVAES_PADDED_SIZE(x) (x + AES_BLOCK_SIZE - (x % AES_BLOCK_SIZE))
