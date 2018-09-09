@@ -8,7 +8,7 @@
                 # AREA RAM, DATA, ALIGN=0
                 # ORG 0x40020000
                 .section .text
-
+                .p2align 4
                 .globl Start
 Start:                                   # DATA XREF: RAM:4002009C↓o
                                         # RAM:400200A0↓o ...
@@ -196,6 +196,8 @@ litpool:
                 .ltorg
                 .size   litpool, .-litpool
 
+                .p2align 4
+
 AvpResume:                              # CODE XREF: RAM:4002029C↑j
                                         # DATA XREF: obfuscate+14↓o
                 BL      obfuscate
@@ -255,3 +257,6 @@ DoReset:                                 # CODE XREF: RAM:40020038↑j
 DoResetSpin:                         # CODE XREF: DoReset:loc_40020364↓j
                 B       DoResetSpin
 # End of function DoReset
+
+                .p2align 4
+

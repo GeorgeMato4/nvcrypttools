@@ -19,7 +19,7 @@ DEVICE_TARGETS = $(patsubst devices/%,%, $(DEVICE_DIRS))
 DEVICE_RAMDISKS = $(patsubst %, %.cpio.gz, $(DEVICE_TARGETS))
 DEVICE_BOOTIMGS = $(patsubst %, %.img, $(DEVICE_TARGETS))
 
-all: nvsign nvencrypt nvdecrypt mknvfblob warmboot-tf101.bin $(DEVICE_TARGETS)
+all: nvsign nvencrypt nvdecrypt mknvfblob warmboot-tf101.bin warmboot-h4x $(DEVICE_TARGETS)
 
 $(DEVICE_TARGETS): nvblob2go.c $(SHARED_OBJS) bins
 	$(CC) $(CFLAGS) -Idevices/$@ -o $@ nvblob2go.c $(SHARED_OBJS) $(LDFLAGS) && \
@@ -53,6 +53,9 @@ nvencrypt: nvencrypt.c $(SHARED_OBJS)
 nvdecrypt: nvdecrypt.c $(SHARED_OBJS)
 	$(CC) $(CFLAGS) -o $@ $@.c $(SHARED_OBJS)
 
+warmboot-h4x: warmboot-h4x.c $(SHARED_OBJS)
+	$(CC) $(CFLAGS) -o $@ $@.c $(SHARED_OBJS)
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -76,7 +79,8 @@ bootimgs: $(DEVICE_BOOTIMGS)
 clean: 
 	@rm -f mknvfblob nvencrypt nvdecrypt nvsign $(SHARED_OBJS) \
 		$(DEVICE_TARGETS) $(DEVICE_RAMDISKS) \
-		warmboot-tf101.o warmboot-tf101.elf warmboot-tf101.bin
+		warmboot-tf101.o warmboot-tf101.elf warmboot-tf101.bin \
+		warmboot-h4x
 	@make -C devices clean
 
 .PHONY: all clean bins ramdisks

@@ -29,6 +29,9 @@ struct tegra_crypt_req {
 
 typedef void * nvaes_ctx;
 
+void *mmap_file(const char *path, size_t *sz);
+void memcpy_to_file(const char *fname, uint8_t *ptr, size_t size);
+
 nvaes_ctx nvaes_open();
 void nvaes_close(nvaes_ctx);
 

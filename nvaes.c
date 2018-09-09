@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include "nvaes.h"
 
 #ifndef MIN
@@ -24,6 +26,37 @@ typedef struct {
 } nvaes_ctx_priv;
 
 int nvaes_dbg;
+
+void *mmap_file(const char *path, size_t *sz)
+{
+    int fd;
+    struct stat st;
+    void *ptr;
+
+    fd = open(path, O_RDONLY);
+    if(fd == -1)
+        perror("open");
+    if(fstat(fd, &st) != 0)
+        perror("fstat");
+
+    ptr = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+    if(ptr==NULL)
+        perror("mmap");
+    close(fd);
+
+    *sz = st.st_size;
+
+    return ptr;
+}
+
+void memcpy_to_file(const char *fname, uint8_t *ptr, size_t size)
+{
+    FILE *fp;
+
+    fp = fopen(fname, "wb");
+    fwrite(ptr, size, 1, fp);
+    fclose(fp);
+}
 
 void nvaes_set_dbg(int dbg_on) {
     nvaes_dbg = dbg_on;
