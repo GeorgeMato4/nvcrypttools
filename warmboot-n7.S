@@ -10,6 +10,11 @@
 
 // ===========================================================================
 
+#define PMC_BASE 0x7000E400
+#define _REG(base, off) ((base) + (off))
+#define PMC(off) _REG(PMC_BASE, off)
+#define PMC_SCRATCH0 0x50
+
 // Segment type: Regular
                 // AREA RAM, DATA, ALIGN=0
                 // ORG 0x40020000
@@ -20,6 +25,12 @@
 
 Start:                                   // DATA XREF: RAM:4002000C↓o
                                         // RAM:off_40020324↓o
+
+                LDR     R0, =PMC(PMC_SCRATCH0)
+                LDR     R1, [R0]
+                BIC     R1, #0x10000000
+                STR     R1, [R0]
+
                 MOV     R0, #0x70000000
                 MOV     R1, #0xC0
                 STR     R1, [R0,#0x24]
