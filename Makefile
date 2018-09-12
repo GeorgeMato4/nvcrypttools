@@ -76,6 +76,15 @@ warmboot-tf101.elf: warmboot-tf101.o warmboot-tf101.lds
 warmboot-tf101.bin: warmboot-tf101.elf
 	arm-linux-androideabi-objcopy -v -O binary $< $@
 
+warmboot-tf101-pwn.o: warmboot-tf101-pwn.S
+	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
+
+warmboot-tf101-pwn.elf: warmboot-tf101-pwn.o warmboot-tf101-pwn.lds
+	arm-linux-androideabi-ld -T warmboot-tf101-pwn.lds -marm -o $@ $<
+
+warmboot-tf101-pwn.bin: warmboot-tf101-pwn.elf
+	arm-linux-androideabi-objcopy -v -O binary $< $@
+
 warmboot-n7.o: warmboot-n7.S
 	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
 
