@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stddef.h>
 
 #include "nvaes.h"
 
@@ -219,7 +220,7 @@ int main(int argc, char **argv) {
             exit(3);
         }
         print_hdr(hdr_out);
-        memcpy_to_file(flags.out_path, out + sizeof(warmboot_hdr_t), hdr_out->code_sz);
+        memcpy_to_file(flags.out_path, out + sizeof(warmboot_hdr_t), crypt_sz - clear_sz);
     } else {
         warmboot_hdr_t *hdr = (warmboot_hdr_t *)out;
         hdr->len_insecure = in_sz + sizeof(warmboot_hdr_t);

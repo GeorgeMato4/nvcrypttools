@@ -6,11 +6,19 @@ LD := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
 MAKE ?= make
 
-CFLAGS := -O0 -g -D__ANDROID_API__=17 -DNVAES_DEBUG_ENABLE -DNVAES_DEBUG_RAW_CRYPT -DNVAES_DEBUG_DATA -DENABLE_DEBUG -Wall -Wno-unused-variable -static -march=armv7-a -mthumb -I.
+CFLAGS := -std=gnu99 -O0 -g -DNVAES_DEBUG_ENABLE -DNVAES_DEBUG_CRYPT -DNVAES_DEBUG_RAW_CRYPT -DNVAES_DEBUG_DATA -DENABLE_DEBUG -Wall -Wno-unused-variable -I.
 LDFLAGS := 
 STRIP := $(CROSS_COMPILE)strip
 
-SHARED_OBJS := nvaes.o nvrcm.o
+SHARED_OBJS := nvrcm.o
+
+ifneq ($(CROSS_COMPILE),)
+	SHARED_OBJS += nvaes.o
+	CFLAGS += -D__ANDROID_API__=17 -static -march=armv7-a -mthumb
+else
+	SHARED_OBJS += nvaes-non-device.o
+	CFLAGS += -lmbedcrypto -fsanitize=undefined
+endif
 
 #NVBLOB2GO_OBJS = gpiokeys.o scrollback.o
 
@@ -60,13 +68,13 @@ warmboot-h4x: warmboot-h4x.c $(SHARED_OBJS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 warmboot-tf101.o: warmboot-tf101.S
-	$(CC) -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
+	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
 
 warmboot-tf101.elf: warmboot-tf101.o warmboot-tf101.lds
-	$(LD) -T warmboot-tf101.lds -marm -o $@ $<
+	arm-linux-androideabi-ld -T warmboot-tf101.lds -marm -o $@ $<
 
 warmboot-tf101.bin: warmboot-tf101.elf
-	$(OBJCOPY) -v -O binary $< $@
+	arm-linux-androideabi-objcopy -v -O binary $< $@
 
 bins:
 	$(MAKE) -C devices

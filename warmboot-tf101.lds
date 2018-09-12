@@ -4,6 +4,7 @@ ENTRY(Start)
 SECTIONS
 {
 	. = 0x40020000;
+	text_start = .;
 	.text : {
 		*(.text)
 	}

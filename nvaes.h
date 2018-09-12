@@ -2,7 +2,9 @@
 #define _AES_H
 #include <stdint.h>
 
+#ifdef __linux__
 #include <linux/ioctl.h>
+#endif
 
 #define AES_BLOCK_SIZE		16
 #define AES_KEYSIZE_128		AES_BLOCK_SIZE

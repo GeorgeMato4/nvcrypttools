@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #include "mknvfblob.h"
 #include "nvaes.h"
