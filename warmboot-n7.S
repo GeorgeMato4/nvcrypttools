@@ -26,12 +26,9 @@
 Start:                                   // DATA XREF: RAM:4002000C↓o
                                         // RAM:off_40020324↓o
 
-                LDR     R0, =PMC(PMC_SCRATCH0)
-                LDR     R1, [R0]
-                BIC     R1, #0x10000000
-                STR     R1, [R0]
+                b indicate_pwn
+back_to_start:
 
-                MOV     R0, #0x70000000
                 MOV     R1, #0xC0
                 STR     R1, [R0,#0x24]
                 LDR     R0, =Start
@@ -304,7 +301,18 @@ DoReset:                                 // CODE XREF: RAM:4002002C↑j
 
 spin3:                            // CODE XREF: RAM:loc_400203BC↓j
                 B       spin3
-// RAM           ends
+
+indicate_pwn:
+#if 1
+                LDR     R0, =PMC(PMC_SCRATCH0)
+                LDR     R1, [R0]
+                ORR     R1, #0x10000000
+                STR     R1, [R0]
+#endif
+                MOV     R0, #0x70000000
+                b back_to_start
+
+                .ltorg
 
                 .p2align 4
                 .globl End
