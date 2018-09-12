@@ -89,7 +89,7 @@ warmboot-n7-pwn.o: warmboot-n7-pwn.S
 	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
 
 warmboot-n7-pwn.elf: warmboot-n7-pwn.o warmboot-n7-pwn.lds
-	arm-linux-androideabi-ld -T warmboot-n7.lds -marm -o $@ $<
+	arm-linux-androideabi-ld -T warmboot-n7-pwn.lds -marm -o $@ $<
 
 warmboot-n7-pwn.bin: warmboot-n7-pwn.elf
 	arm-linux-androideabi-objcopy -v -O binary $< $@
