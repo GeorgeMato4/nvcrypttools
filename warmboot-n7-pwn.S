@@ -15,6 +15,10 @@
 #define MINILOADER_ENTRY 0x4000A000
 #define FILL_START (MINILOADER_ENTRY + 1024)
 
+#define IROM_START 0xfff00000
+#define IROM_SIZE (48 * 1024)
+#define IROM_COPY_ADDR 0x4002f000
+
 #define PMC_BASE 0x7000E400
 #define _REG(base, off) ((base) + (off))
 #define PMC(off) _REG(PMC_BASE, off)
@@ -311,12 +315,10 @@ spin3:                            // CODE XREF: RAM:loc_400203BC↓j
 
 indicate_pwn:
 
-                // fill some IRAM with first 32 bits of SBK to indicate pwn
-                LDR     R0, =FUSE_PRIVATE_KEY0
-                LDR     R2, [R0]
-                LDR     R0, =FILL_START
-                LDR     R1, =(IRAM_END - FILL_START - 4096)
-                BL      fill_block
+                ldr r0, =IROM_COPY_ADDR
+                ldr r1, =#IROM_START
+                mov r2, #IROM_SIZE
+                bl copy
 
                 LDR     R0, =PMC(PMC_SCRATCH0)
                 LDR     R1, [R0]
@@ -332,21 +334,22 @@ spin:
                 B       spin
 
 //
-// Sets memory
+// Simple block copy.
 //   r0 = destination address
-//   r1 = length in bytes
-//   r2 = fill value
-// Destroys r0-r1.
+//   r1 = source address
+//   r2 = length in bytes
+// Destroys r0-r3.
 //
-                .globl fill_block
-fill_block:
+                .globl copy
+copy:
 
-                // Store the word...
-                str r2, [r0], #4
+                // Copy the word...
+                ldr r3, [r1], #4
+                str r3, [r0], #4
 
                 // And continue while we have words left to copy.
-                subs r1, r1, #4
-                bne fill_block
+                subs r2, r2, #4
+                bne copy
 
                 // Once we're done, return.
                 bx lr
