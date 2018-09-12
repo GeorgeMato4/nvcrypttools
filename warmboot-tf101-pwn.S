@@ -30,6 +30,13 @@
                 .globl Start
 Start:                                   # DATA XREF: RAM:4002009C↓o
                                         # RAM:400200A0↓o ...
+                BL fill_iram
+
+                LDR     R0, =IROM_COPY_ADDR
+                LDR     R1, =IROM_START
+                MOV     R2, #IROM_SIZE
+                BL      copy
+
                 LDR     R0, =PMC(PMC_SCRATCH0)
                 MOV     R1, #0x20000000
                 STR     R1, [R0]
@@ -41,11 +48,42 @@ Start:                                   # DATA XREF: RAM:4002009C↓o
 spin:
                 B       spin
 
+                .globl fill_iram
+fill_iram:
+                ldr r0, =FILL_START
+                ldr r1, =IRAM_END
+L_fill_word:
+                ldr r2, =#0x13371337
+                str r2, [r0], #4
+                cmp r0, r1
+                bne L_fill_word
+                bx lr
+
+//
+// Simple block copy.
+//   r0 = destination address
+//   r1 = source address
+//   r2 = length in bytes
+// Destroys r0-r3.
+//
+                .globl copy
+copy:
+                // Copy the word...
+                ldr r3, [r1], #4
+                str r3, [r0], #4
+
+                // And continue while we have words left to copy.
+                subs r2, r2, #4
+                bne copy
+
+                // Once we're done, return.
+                bx lr
+
 litpool:
                 .ltorg
                 .size   litpool, .-litpool
 
-                .rept 503
+                .rept 481
                 .word 0x40007800
                 .endr
 
