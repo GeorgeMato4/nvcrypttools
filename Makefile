@@ -27,7 +27,7 @@ DEVICE_TARGETS = $(patsubst devices/%,%, $(DEVICE_DIRS))
 DEVICE_RAMDISKS = $(patsubst %, %.cpio.gz, $(DEVICE_TARGETS))
 DEVICE_BOOTIMGS = $(patsubst %, %.img, $(DEVICE_TARGETS))
 
-all: nvsign nvencrypt nvdecrypt mknvfblob warmboot-tf101.bin warmboot-n7.bin warmboot-h4x $(DEVICE_TARGETS)
+all: nvsign nvencrypt nvdecrypt mknvfblob warmboot-tf101.bin warmboot-n7.bin warmboot-n7-pwn.bin warmboot-h4x $(DEVICE_TARGETS)
 
 $(DEVICE_TARGETS): nvblob2go.c $(SHARED_OBJS) bins
 	$(CC) $(CFLAGS) -Idevices/$@ -o $@ nvblob2go.c $(SHARED_OBJS) $(LDFLAGS) && \
@@ -85,6 +85,15 @@ warmboot-n7.elf: warmboot-n7.o warmboot-n7.lds
 warmboot-n7.bin: warmboot-n7.elf
 	arm-linux-androideabi-objcopy -v -O binary $< $@
 
+warmboot-n7-pwn.o: warmboot-n7-pwn.S
+	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
+
+warmboot-n7-pwn.elf: warmboot-n7-pwn.o warmboot-n7-pwn.lds
+	arm-linux-androideabi-ld -T warmboot-n7.lds -marm -o $@ $<
+
+warmboot-n7-pwn.bin: warmboot-n7-pwn.elf
+	arm-linux-androideabi-objcopy -v -O binary $< $@
+
 bins:
 	$(MAKE) -C devices
 
@@ -98,6 +107,7 @@ clean:
 		$(DEVICE_TARGETS) $(DEVICE_RAMDISKS) \
 		warmboot-tf101.o warmboot-tf101.elf warmboot-tf101.bin \
 		warmboot-n7.o warmboot-n7.elf warmboot-n7.bin \
+		warmboot-n7-pwn.o warmboot-n7-pwn.elf warmboot-n7-pwn.bin \
 		warmboot-h4x
 	@make -C devices clean
 
