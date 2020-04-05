@@ -22,12 +22,12 @@ endif
 
 #NVBLOB2GO_OBJS = gpiokeys.o scrollback.o
 
-DEVICE_DIRS = $(shell gfind devices/ -mindepth 1 -maxdepth 1 -type d)
+DEVICE_DIRS = $(shell find devices/ -mindepth 1 -maxdepth 1 -type d)
 DEVICE_TARGETS = $(patsubst devices/%,%, $(DEVICE_DIRS))
 DEVICE_RAMDISKS = $(patsubst %, %.cpio.gz, $(DEVICE_TARGETS))
 DEVICE_BOOTIMGS = $(patsubst %, %.img, $(DEVICE_TARGETS))
 
-all: nvsign nvencrypt nvdecrypt mknvfblob warmboot-tf101.bin warmboot-n7.bin warmboot-n7-pwn.bin warmboot-h4x $(DEVICE_TARGETS)
+all: nvsign nvencrypt nvdecrypt mknvfblob warmboot-n7.bin warmboot-n7-pwn.bin warmboot-h4x $(DEVICE_TARGETS)
 
 $(DEVICE_TARGETS): nvblob2go.c $(SHARED_OBJS) bins
 	$(CC) $(CFLAGS) -Idevices/$@ -o $@ nvblob2go.c $(SHARED_OBJS) $(LDFLAGS) && \
@@ -67,23 +67,7 @@ warmboot-h4x: warmboot-h4x.c $(SHARED_OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-warmboot-tf101.o: warmboot-tf101.S
-	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
 
-warmboot-tf101.elf: warmboot-tf101.o warmboot-tf101.lds
-	arm-linux-androideabi-ld -T warmboot-tf101.lds -marm -o $@ $<
-
-warmboot-tf101.bin: warmboot-tf101.elf
-	arm-linux-androideabi-objcopy -v -O binary $< $@
-
-warmboot-tf101-pwn.o: warmboot-tf101-pwn.S
-	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
-
-warmboot-tf101-pwn.elf: warmboot-tf101-pwn.o warmboot-tf101-pwn.lds
-	arm-linux-androideabi-ld -T warmboot-tf101-pwn.lds -marm -o $@ $<
-
-warmboot-tf101-pwn.bin: warmboot-tf101-pwn.elf
-	arm-linux-androideabi-objcopy -v -O binary $< $@
 
 warmboot-n7.o: warmboot-n7.S
 	arm-linux-androideabi-gcc -O0 -g -Wall -march=armv4t -mtune=arm7tdmi -marm -c -o $@ $<
@@ -114,7 +98,6 @@ bootimgs: $(DEVICE_BOOTIMGS)
 clean: 
 	@rm -f mknvfblob nvencrypt nvdecrypt nvsign $(SHARED_OBJS) \
 		$(DEVICE_TARGETS) $(DEVICE_RAMDISKS) \
-		warmboot-tf101.o warmboot-tf101.elf warmboot-tf101.bin \
 		warmboot-n7.o warmboot-n7.elf warmboot-n7.bin \
 		warmboot-n7-pwn.o warmboot-n7-pwn.elf warmboot-n7-pwn.bin \
 		warmboot-h4x
